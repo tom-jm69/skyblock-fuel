@@ -174,7 +174,7 @@ def main():
 
     print("\nGesamtanzahl der benötigten Items:")
     for item_id, amount in total_items_needed.items():
-        print(f"{item_id}: {math.ceil(round(amount, 2)):.0f}")
+        print(f"{item_id}: {math.ceil(amount):.0f}")
 
     print("\nFuel pro minion: ", int(fuel_per_minion))
 
