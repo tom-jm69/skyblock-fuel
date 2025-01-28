@@ -1,6 +1,7 @@
 from typing import Dict, Union
 
 import requests
+import math
 from pydantic import BaseModel
 
 # Constants for item data and API URL
@@ -44,6 +45,29 @@ class Recipe(BaseModel):
             for ingredient in self.ingredients.values()
         )
         return total_cost / self.output_amount
+
+    def calculate_total_amount(self, target_amount: int) -> Dict[str, int]:
+        """Calculate the total amount of each item needed for a given target amount."""
+        total_items = {}
+        self._calculate_total_amount_recursive(target_amount, total_items)
+        return total_items
+
+    def _calculate_total_amount_recursive(
+        self, target_amount: int, total_items: Dict[str, int]
+    ):
+        """Recursive helper function to calculate the total amount of each item needed."""
+        multiplier = target_amount / self.output_amount
+        for ingredient_name, ingredient in self.ingredients.items():
+            if isinstance(ingredient.item, Recipe):
+                ingredient.item._calculate_total_amount_recursive(
+                    ingredient.amount * multiplier, total_items
+                )
+            else:
+                item_id = ingredient.item.item_id
+                if item_id in total_items:
+                    total_items[item_id] += ingredient.amount * multiplier
+                else:
+                    total_items[item_id] = ingredient.amount * multiplier
 
 
 # Function to fetch item data
@@ -146,11 +170,25 @@ def get_minion_amount() -> int:
         exit(1)
 
 
-T3_AMOUNT = get_t3_amount()
-MINION_COUNT = get_minion_amount()
-T3_FUEL_PRICE = T3_FUEL.calculate_cost()
+def main():
+    t3_amount = get_t3_amount()
+    minion_amount = get_minion_amount()
+    fuel_per_minion = t3_amount / minion_amount
 
-# Display the calculated cost
-print(f"{T3_FUEL_PRICE * T3_AMOUNT:,.0f} coins a {T3_FUEL_PRICE:,.0f}")
-FUEL_PER_MINION = f"{T3_AMOUNT / MINION_COUNT:.0f}"
-print(f"Total of {FUEL_PER_MINION} fuel per minion")
+    # Calculate total cost
+    total_cost = T3_FUEL.calculate_cost() * t3_amount
+    print(f"\nGesamtkosten für {t3_amount} T3 Fuel:")
+    print(f"{total_cost:.2f} Coins")
+
+    # Calculate total amount of items needed
+    total_items_needed = T3_FUEL.calculate_total_amount(t3_amount)
+
+    print("\nGesamtanzahl der benötigten Items:")
+    for item_id, amount in total_items_needed.items():
+        print(f"{item_id}: {math.ceil(round(amount, 2)):.0f}")
+
+    print("\nFuel pro minion: ", fuel_per_minion)
+
+
+if __name__ == "__main__":
+    main()
