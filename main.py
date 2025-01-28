@@ -1,7 +1,7 @@
+import math
 from typing import Dict, Union
 
 import requests
-import math
 from pydantic import BaseModel
 
 # Constants for item data and API URL
@@ -148,20 +148,9 @@ T3_FUEL = Recipe(
 
 
 # User input handling and cost calculation
-def get_t3_amount() -> int:
+def get_amount(text: str) -> int:
     try:
-        return int(input("Anzahl T3 Fuel eingeben\n>>> "))
-    except ValueError:
-        print("\nScheint keine Zahl zu sein ...")
-        exit(1)
-    except KeyboardInterrupt:
-        print("\nReceived KeyboardInterrupt ...")
-        exit(1)
-
-
-def get_minion_amount() -> int:
-    try:
-        return int(input("Anzahl inferno Minions\n>>> "))
+        return int(input(text))
     except ValueError:
         print("\nScheint keine Zahl zu sein ...")
         exit(1)
@@ -171,8 +160,8 @@ def get_minion_amount() -> int:
 
 
 def main():
-    t3_amount = get_t3_amount()
-    minion_amount = get_minion_amount()
+    t3_amount = get_amount("Anzahl T3 Fuel eingeben\n>>> ")
+    minion_amount = get_amount("Anzahl Infero Minions eingeben\n>>> ")
     fuel_per_minion = t3_amount / minion_amount
 
     # Calculate total cost
@@ -187,7 +176,7 @@ def main():
     for item_id, amount in total_items_needed.items():
         print(f"{item_id}: {math.ceil(round(amount, 2)):.0f}")
 
-    print("\nFuel pro minion: ", fuel_per_minion)
+    print("\nFuel pro minion: ", int(fuel_per_minion))
 
 
 if __name__ == "__main__":
